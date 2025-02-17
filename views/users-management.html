@@ -49,6 +49,22 @@
                                 <label><i class="fas fa-user-tag"></i> Отчество:</label>
                                 <input type="text" name="middleName" placeholder="Введите отчество">
                             </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> Номер телефона:</label>
+                                <input type="text" name="phoneNumber" placeholder="Введите номер телефона" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> Адрес электронной почты:</label>
+                                <input type="email" name="email" placeholder="Введите адрес электронной почты" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-id-card"></i> Серия и номер паспорта:</label>
+                                <input type="text" name="passportNumber" placeholder="Введите серию и номер паспорта" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-id-badge"></i> Номер СНИЛС:</label>
+                                <input type="text" name="snilsNumber" placeholder="Введите номер СНИЛС" required>
+                            </div>
                             <div class="form-group admin-checkbox">
                                 <input type="checkbox" name="isAdmin" id="isAdmin">
                                 <label for="isAdmin"><i class="fas fa-user-shield"></i> Администратор</label>
@@ -72,8 +88,24 @@
                                 </thead>
                                 <tbody id="usersList">
                                     <!-- Сюда будут добавляться пользователи -->
+                                    <tr>
+                                        <td>username</td>
+                                        <td>ФИО</td>
+                                        <td>Роль</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                                                <button class="copy-btn"><i class="fas fa-copy"></i></button>
+                                                <button class="reset-btn"><i class="fas fa-key"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <div id="usersListMobile" class="users-list-mobile">
+                            <!-- Сюда будут добавляться пользователи для мобильной версии -->
                         </div>
                     </div>
                 </div>

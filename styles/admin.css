@@ -50,14 +50,21 @@
     width: 100%;
 }
 
-.form-group input[type="text"] {
-    width: calc(100% - 24px);  /* Учитываем padding */
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-family: inherit;
-    transition: border-color 0.3s ease;
-    margin: 0;  /* Сбрасываем margin */
+.form-group input[type="text"],
+.form-group input[type="email"] {
+	width: 100%; /* Устанавливаем ширину 100% */
+	padding: 12px;
+	border: 2px солид #e0e0e0;
+	border-radius: 8px;
+	font-family: inherit;
+	transition: border-color 0.3s ease;
+	margin: 0; /* Сбрасываем margin */
+	box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
+
+.form-group input[type="email"]:focus {
+	border-color: #3498db;
+	outline: none;
 }
 
 .form-group.answer-group {
@@ -68,7 +75,7 @@
     background: #f8f9fa;
     border-radius: 8px;
     margin-bottom: 15px;
-    border: 1px solid #e0e0e0;
+    border: 1px солид #e0e0e0;
     width: 100%;
     box-sizing: border-box;
 }
@@ -114,46 +121,54 @@
 }
 
 .edit-btn,
-.delete-btn {
-    padding: 5px 10px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+.delete-btn,
+.copy-btn,
+.reset-btn {
+	padding: 10px; /* Устанавливаем одинаковые размеры */
+	margin: 0 5px; /* Добавляем отступы между кнопками */
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	display: inline-flex; /* Устанавливаем одинаковое поведение */
+	align-items: center;
+	justify-content: center;
+	font-size: 14px; /* Устанавливаем одинаковый размер шрифта */
+	width: 40px; /* Устанавливаем одинаковую ширину */
+	height: 40px; /* Устанавливаем одинаковую высоту */
 }
 
 .edit-btn {
-    background-color: #3498db;
-    color: white;
+	background-color: #3498db;
+	color: white;
 }
 
 .delete-btn {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.copy-btn,
-.reset-btn {
-    padding: 5px 10px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+	background-color: #e74c3c;
+	color: white;
 }
 
 .copy-btn {
-    background-color: var(--secondary-color);
-    color: white;
+	background-color: var(--secondary-color);
+	color: white;
 }
 
 .reset-btn {
-    background-color: #f39c12;
-    color: white;
+	background-color: #f39c12;
+	color: white;
 }
 
+.edit-btn:hover,
+.delete-btn:hover,
 .copy-btn:hover,
 .reset-btn:hover {
-    opacity: 0.8;
+	opacity: 0.8;
+}
+
+.users-table td .action-buttons {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px; /* Добавляем отступы между кнопками */
 }
 
 .users-container {
@@ -222,7 +237,7 @@
     width: 100%;
     min-height: 100px;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 8px;
     resize: vertical;
     font-family: inherit;
@@ -233,13 +248,13 @@
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
-    border: 1px solid #e0e0e0;
+    border: 1px солид #e0e0e0;
 }
 
 .answer-group input[type="text"] {
     width: calc(100% - 120px);
     padding: 10px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 6px;
 }
 
@@ -301,7 +316,7 @@
     width: 100%;
     min-height: 100px;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px солид #ddd;
     border-radius: 4px;
     resize: vertical;
 }
@@ -343,12 +358,12 @@
     background-color: #f8f9fa;
     padding: 12px;
     text-align: left;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px солид #e0e0e0;
 }
 
 .questions-table td {
     padding: 12px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px солид #e0e0e0;
 }
 
 /* Добавляем медиа-запрос для мобильных устройств */
@@ -383,7 +398,7 @@
 
     /* Улучшаем отображение кнопок на мобильных устройствах */
     .edit-btn, .delete-btn, .copy-btn, .reset-btn {
-        padding: 8px 12px;
+        padding: 10px 14px;
         margin: 2px;
     }
 
@@ -731,7 +746,7 @@ button[type="submit"]:active {
 .add-user-form input[type="text"] {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 8px;
     font-family: inherit;
     transition: border-color 0.3s ease;
@@ -743,23 +758,25 @@ button[type="submit"]:active {
 }
 
 .admin-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin: 10px 0;  /* Добавили отступы сверху и снизу */
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 15px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	margin: 10px 0; /* Добавили отступы сверху и снизу */
+	box-sizing: border-box; /* Учитываем padding и border в ширине */
+	width: 100%; /* Устанавливаем ширину 100% */
 }
 
 .admin-checkbox input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+	width: 18px;
+	height: 18px;
 }
 
 .admin-checkbox label {
-    margin: 0 !important;
-    cursor: pointer;
+	margin: 0 !important;
+	cursor: pointer;
 }
 
 .users-list-block {
@@ -884,7 +901,7 @@ button[type="submit"]:active {
 .add-test-form textarea {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 8px;
     font-family: inherit;
     transition: border-color 0.3s ease;
@@ -1042,7 +1059,7 @@ button[type="submit"]:active {
 select {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 8px;
     font-family: inherit;
     font-size: 14px;
@@ -1072,13 +1089,13 @@ select:focus {
     background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px солид #e0e0e0;
 }
 
 .search-filters input[type="text"] {
     flex: 1;
     padding: 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px солид #e0e0e0;
     border-radius: 8px;
     font-family: inherit;
     font-size: 14px;
@@ -1109,7 +1126,7 @@ select:focus {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 15px;
-    border: 1px solid #e0e0e0;
+    border: 1px солид #e0e0e0;
     transition: all 0.3s ease;
 }
 
@@ -1322,4 +1339,76 @@ select:focus {
     margin: 0;
     font-size: 1rem; /* Adjusted font size */
     color: #ecf0f1; /* Changed text color */
+}
+
+@media screen and (max-width: 768px) {
+    .users-table {
+        display: none; /* Скрываем таблицу на мобильных устройствах */
+    }
+
+    .users-list-mobile {
+        display: block;
+    }
+
+    .user-row {
+        display: block;
+        margin-bottom: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .user-header {
+        padding: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-summary {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-number {
+        font-weight: bold;
+        min-width: 25px;
+    }
+
+    .user-preview {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .user-details {
+        display: none;
+        padding: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .user-row.expanded .user-details {
+        display: block;
+    }
+
+    .full-name {
+        margin-bottom: 10px;
+    }
+
+    .user-role {
+        margin-bottom: 15px;
+        color: #666;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+}
+
+@media screen and (min-width: 769px) {
+	.users-list-mobile {
+		display: none; /* Скрываем выпадающий список на компьютерной версии */
+	}
 }
