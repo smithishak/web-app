@@ -35,15 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
 							</button>` : ''}
 					</td>
 					<td>
-						<button onclick="editUser('${user._id}')" class="edit-btn">
-							<i class="fas fa-edit"></i>
-						</button>
-						<button onclick="deleteUser('${user._id}')" class="delete-btn">
-							<i class="fas fa-trash"></i>
-						</button>
-						<button onclick="resetPassword('${user._id}')" class="reset-btn">
-							<i class="fas fa-key"></i>
-						</button>
+							<button onclick="editUser('${user._id}')" class="edit-btn">
+								<i class="fas fa-edit"></i>
+							</button>
+							<button onclick="deleteUser('${user._id}')" class="delete-btn">
+								<i class="fas fa-trash"></i>
+							</button>
+							<button onclick="resetPassword('${user._id}')" class="reset-btn">
+								<i class="fas fa-key"></i>
+							</button>
 					</td>
 				</tr>
 			`).join('');

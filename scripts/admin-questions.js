@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         const formData = new FormData(addQuestionForm);
         const questionData = {
+            testId: formData.get('testId'),  // Добавить testId
             questionText: formData.get('questionText'),
             answers: [],
             correctAnswer: parseInt(formData.get('correctAnswer'))
@@ -86,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
 
         try {
-            const response = await fetch('/api/questions', {
+            const response = await fetch('/api/questions', {  // Изменен путь
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Загрузка существующих вопросов
     async function loadQuestions() {
         try {
-            const response = await fetch('/api/questions');
+            const response = await fetch('/api/questions');  // Изменен путь
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -150,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         
             if (isMobile) {
                 questionsList.innerHTML = questions.map((question, index) => {
-                    // Проверяем и обрабатываем questionText
                     const questionText = question.questionText || '';
                     const previewText = questionText.length > 50 ? 
                         `${escapeHtml(questionText.substring(0, 50))}...` : 
@@ -158,22 +158,28 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                     return `
                         <tr class="question-row">
-                            <td class="question-header" onclick="this.parentElement.classList.toggle('expanded')">
-                                <div class="question-summary">
-                                    <span class="question-number">${index + 1}.</span>
-                                    <span class="question-preview">${previewText}</span>
-                                    <i class="fas fa-chevron-down"></i>
+                            <td>
+                                <div class="question-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                                    <div class="question-summary">
+                                        <span class="question-number">${index + 1}</span>
+                                        <span class="question-preview">${previewText}</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
                                 </div>
                                 <div class="question-details">
                                     <div class="full-question">${escapeHtml(questionText)}</div>
                                     <div class="answers-list">
                                         ${Array.isArray(question.answers) ? 
-                                            question.answers.map(answer => escapeHtml(answer || '')).join('<br>') : 
+                                            question.answers.map(answer => `<span>${escapeHtml(answer || '')}</span>`).join('') : 
                                             ''}
                                     </div>
                                     <div class="action-buttons">
-                                        <button class="edit-btn" data-id="${escapeHtml(question._id)}">Редактировать</button>
-                                        <button class="delete-btn" data-id="${escapeHtml(question._id)}">Удалить</button>
+                                        <button class="icon-btn edit-btn" data-id="${escapeHtml(question._id)}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="icon-btn delete-btn" data-id="${escapeHtml(question._id)}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </td>
@@ -181,14 +187,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                     `;
                 }).join('');
             } else {
-                // Существующий код для десктопной версии
                 questionsList.innerHTML = questions.map(question => `
                     <tr>
                         <td>${escapeHtml(question.questionText)}</td>
                         <td>${Array.isArray(question.answers) ? question.answers.map(escapeHtml).join(', ') : ''}</td>
-                        <td>
-                            <button class="edit-btn" data-id="${escapeHtml(question._id)}">Редактировать</button>
-                            <button class="delete-btn" data-id="${escapeHtml(question._id)}">Удалить</button>
+                        <td class="action-buttons">
+                            <button class="icon-btn edit-btn" title="Редактировать" data-id="${escapeHtml(question._id)}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="icon-btn delete-btn" title="Удалить" data-id="${escapeHtml(question._id)}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                 `).join('');
@@ -201,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const id = e.target.dataset.id;
                     if (confirm('Вы уверены, что хотите удалить этот вопрос?')) {
                         try {
-                            const response = await fetch(`/api/questions/${id}`, {
+                            const response = await fetch(`/api/questions/${id}`, {  // Изменен путь
                                 method: 'DELETE'
                             });
                             if (response.ok) {
@@ -227,4 +236,56 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Загружаем вопросы при загрузке страницы
     loadQuestions();
+    loadTests();
 });
+
+function loadTests() {
+    fetch('/api/tests')  // Изменен путь
+       .then(response => {
+           if (!response.ok) throw new Error('Network response was not ok');
+           if (response.headers.get("content-type")?.indexOf("application/json") === -1) {
+               throw new TypeError("Ответ сервера не в формате JSON");
+           }
+           return response.json();
+       })
+       .then(tests => {
+          const testSelect = document.querySelector('select[name="testId"]');
+          if (testSelect) {
+              testSelect.innerHTML = '<option value="">Выберите тест</option>';
+              tests.forEach(test => {
+                  testSelect.innerHTML += `<option value="${test._id}">${escapeHtml(test.title)}</option>`;
+              });
+          }
+       })
+       .catch(err => {
+           console.error("Ошибка при загрузке тестов:", err);
+           alert('Ошибка при загрузке списка тестов');
+       });
+}
+
+// Удалите или закомментируйте вторую определение loadQuestions, например:
+//
+/*
+function loadQuestions() {
+    fetch('/api/admin/questions')
+        .then(response => response.json())
+        .then(data => {
+            const questionsList = document.getElementById('questionsList');
+            // Очищаем список
+            questionsList.innerHTML = '';
+            data.forEach(q => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${q.questionText}</td>
+                    <td>${q.answers.map(a => a.text).join(', ')}</td>
+                    <td>
+                        <button class="edit-btn" data-id="${q.id}">Редактировать</button>
+                        <button class="delete-btn" data-id="${q.id}">Удалить</button>
+                    </td>
+                `;
+                questionsList.appendChild(tr);
+            });
+        })
+        .catch(err => console.error('Ошибка при загрузке вопросов:', err));
+}
+*/
