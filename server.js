@@ -167,6 +167,20 @@ app.put('/api/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
+// Добавляем маршрут для получения данных пользователя
+app.get('/api/users/:id', checkAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Ошибка получения пользователя:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 // Обновленные endpoints для вопросов с проверкой инициализации
 app.post('/api/questions', async (req, res) => {
     if (!questionsCollection) {

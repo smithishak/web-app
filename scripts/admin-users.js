@@ -191,11 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	};
 
-	// Функция добавления пользователя в мобильный список
+	// Обновляем функцию добавления пользователя в мобильный список
 	function addUserToMobileList(user) {
 		const userRow = document.createElement('div');
 		userRow.classList.add('user-row');
-
+		userRow.dataset.userId = user._id; // Добавляем data-атрибут с ID пользователя
+	
 		const userHeader = document.createElement('div');
 		userHeader.classList.add('user-header');
 		userHeader.innerHTML = `
@@ -203,27 +204,132 @@ document.addEventListener('DOMContentLoaded', () => {
 				<span class="user-preview">${user.lastName} ${user.firstName} ${user.middleName || ''}</span>
 				<i class="fas fa-chevron-down"></i>
 			</div>
-		`;
-
+			`;
+	
 		const userDetails = document.createElement('div');
 		userDetails.classList.add('user-details');
 		userDetails.innerHTML = `
 			<div class="full-name">${user.lastName} ${user.firstName} ${user.middleName || ''}</div>
 			<div class="user-role">${user.isAdmin ? 'Администратор' : 'Пользователь'}</div>
 			<div class="action-buttons">
-				<button class="edit-btn" onclick="editUser('${user._id}')">Редактировать</button>
-				<button class="delete-btn" onclick="deleteUser('${user._id}')">Удалить</button>
+				<button class="edit-btn" data-user-id="${user._id}">
+					<i class="fas fa-edit"></i> Редактировать
+				</button>
+				<button class="delete-btn" onclick="deleteUser('${user._id}')">
+					<i class="fas fa-trash"></i> Удалить
+				</button>
 			</div>
 		`;
-
+	
 		userRow.appendChild(userHeader);
 		userRow.appendChild(userDetails);
 		usersListMobile.appendChild(userRow);
-
+	
 		userHeader.addEventListener('click', () => {
 			userRow.classList.toggle('expanded');
 		});
 	}
+
+	// Функции для работы с модальным окном
+	function openEditModal(userId) {
+		const modal = document.getElementById('editUserModal');
+		const form = document.getElementById('editUserForm');
+		
+		if (!modal || !form) {
+			console.error('Модальное окно или форма не найдены');
+			return;
+		}
+	
+		// Получаем данные пользователя
+		fetch(`/api/users/${userId}`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Пользователь не найден');
+				}
+				return response.json();
+			})
+			.then(user => {
+				// Заполняем форму данными пользователя
+				form.elements.userId.value = user._id;
+				form.elements.username.value = user.username || '';
+				form.elements.firstName.value = user.firstName || '';
+				form.elements.lastName.value = user.lastName || '';
+				form.elements.middleName.value = user.middleName || '';
+				form.elements.isAdmin.checked = !!user.isAdmin;
+				
+				modal.style.display = 'block';
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				alert('Ошибка при загрузке данных пользователя');
+			});
+	}
+
+	function closeEditModal() {
+		const modal = document.getElementById('editUserModal');
+		modal.style.display = 'none';
+	}
+
+	// Обработчик отправки формы редактирования
+	document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const form = e.target;
+		const userId = form.elements.userId.value;
+		
+		const userData = {
+			username: form.elements.username.value,
+			firstName: form.elements.firstName.value,
+			lastName: form.elements.lastName.value,
+			middleName: form.elements.middleName.value,
+			isAdmin: form.elements.isAdmin.checked
+		};
+
+		try {
+			const response = await fetch(`/api/users/${userId}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(userData)
+			});
+
+			if (response.ok) {
+				closeEditModal();
+				loadUsers(); // Перезагружаем список пользователей
+				alert('Пользователь успешно обновлен');
+			} else {
+				const data = await response.json();
+				alert(data.error || 'Ошибка при обновлении пользователя');
+			}
+		} catch (error) {
+			console.error('Ошибка:', error);
+			alert('Ошибка при обновлении пользователя');
+		}
+	});
+
+	// Обработчик клика по кнопке редактирования
+	document.addEventListener('click', function(e) {
+		const editBtn = e.target.closest('.edit-btn');
+		if (editBtn) {
+			const userId = editBtn.dataset.userId || editBtn.closest('[data-user-id]')?.dataset.userId;
+			if (userId) {
+				openEditModal(userId);
+			}
+		}
+	});
+
+	// Закрытие модального окна при клике вне его
+	window.addEventListener('click', function(e) {
+		const modal = document.getElementById('editUserModal');
+		if (e.target === modal) {
+			closeEditModal();
+		}
+	});
+
+	// Добавляем обработчик для кнопки отмены
+	document.getElementById('cancelEditBtn').addEventListener('click', () => {
+		closeEditModal();
+	});
 
 	// Инициализация
 	loadUsers();
