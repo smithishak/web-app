@@ -1,6 +1,6 @@
 .container-1 {
-    background: #2c3e50;
-    color: white;
+    background: #e74c3c;
+    color: black;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -14,7 +14,7 @@
 }
 
 .container-1:hover {
-    background: #34495e;
+    background: #c0392b;
 }
 
 .admin-controls {
@@ -63,7 +63,7 @@
 }
 
 .form-group input[type="email"]:focus {
-	border-color: #3498db;
+	border-color: #2ecc71;
 	outline: none;
 }
 
@@ -138,7 +138,7 @@
 }
 
 .edit-btn {
-	background-color: #3498db;
+	background-color: #2ecc71;
 	color: white;
 }
 
@@ -148,12 +148,12 @@
 }
 
 .copy-btn {
-	background-color: var(--secondary-color);
+	background-color: #27ae60;
 	color: white;
 }
 
 .reset-btn {
-	background-color: #f39c12;
+	background-color: #c0392b;
 	color: white;
 }
 
@@ -1237,6 +1237,7 @@ select:focus {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    border-bottom: 2px solid #2ecc71;
 }
 
 /* Информация об элементах */
@@ -1833,19 +1834,19 @@ select {
 }
 
 .save-btn {
-    background-color: #3498db;
+    background-color: #2ecc71;
     color: white;
 }
 
 .save-btn:hover {
-    background-color: #2980b9;
+    background-color: #27ae60;
 }
 
 .cancel-btn {
-    background-color: #95a5a6;
+    background-color: #e74c3c;
     color: white;
 }
 
 .cancel-btn:hover {
-    background-color: #7f8c8d;
+    background-color: #c0392b;
 }

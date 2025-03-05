@@ -124,107 +124,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function loadQuestions() {
         try {
             const response = await fetch('/api/questions');  // Изменен путь
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                throw new TypeError("Ответ сервера не в формате JSON");
-            }
-
-            const questions = await response.json();
-            const questionsList = document.getElementById('questionsList');
-
-            if (!questionsList) {
-                console.error('Элемент questionsList не найден');
-                return;
-            }
-
-            if (!Array.isArray(questions)) {
-                questionsList.innerHTML = '<tr><td colspan="3">Нет доступных вопросов</td></tr>';
-                return;
-            }
-
-            const isMobile = window.innerWidth <= 768;
-        
-            if (isMobile) {
-                questionsList.innerHTML = questions.map((question, index) => {
-                    const questionText = question.questionText || '';
-                    const previewText = questionText.length > 50 ? 
-                        `${escapeHtml(questionText.substring(0, 50))}...` : 
-                        escapeHtml(questionText);
-
-                    return `
-                        <tr class="question-row">
-                            <td>
-                                <div class="question-header" onclick="this.nextElementSibling.classList.toggle('show')">
-                                    <div class="question-summary">
-                                        <span class="question-number">${index + 1}</span>
-                                        <span class="question-preview">${previewText}</span>
-                                        <i class="fas fa-chevron-down"></i>
-                                    </div>
-                                </div>
-                                <div class="question-details">
-                                    <div class="full-question">${escapeHtml(questionText)}</div>
-                                    <div class="answers-list">
-                                        ${Array.isArray(question.answers) ? 
-                                            question.answers.map(answer => `<span>${escapeHtml(answer || '')}</span>`).join('') : 
-                                            ''}
-                                    </div>
-                                    <div class="action-buttons">
-                                        <button class="icon-btn edit-btn" data-id="${escapeHtml(question._id)}">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="icon-btn delete-btn" data-id="${escapeHtml(question._id)}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } else {
-                questionsList.innerHTML = questions.map(question => `
-                    <tr>
-                        <td>${escapeHtml(question.questionText)}</td>
-                        <td>${Array.isArray(question.answers) ? question.answers.map(escapeHtml).join(', ') : ''}</td>
-                        <td class="action-buttons">
-                            <button class="icon-btn edit-btn" title="Редактировать" data-id="${escapeHtml(question._id)}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="icon-btn delete-btn" title="Удалить" data-id="${escapeHtml(question._id)}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-
-            // Добавляем обработчики для кнопок
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const id = e.target.dataset.id;
-                    if (confirm('Вы уверены, что хотите удалить этот вопрос?')) {
-                        try {
-                            const response = await fetch(`/api/questions/${id}`, {  // Изменен путь
-                                method: 'DELETE'
-                            });
-                            if (response.ok) {
-                                loadQuestions(); // Перезагружаем список
-                            } else {
-                                alert('Ошибка при удалении вопроса');
-                            }
-                        } catch (error) {
-                            console.error('Ошибка:', error);
-                            alert('Ошибка при удалении вопроса');
-                        }
-                    }
-                });
-            });
+            questions = await response.json(); // Сохраняем все вопросы
+            updateQuestionsList(questions);
         } catch (error) {
             console.error('Ошибка при загрузке вопросов:', error);
             const questionsList = document.getElementById('questionsList');
@@ -234,58 +135,190 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // Загружаем вопросы при загрузке страницы
+    // Заменяем функцию загрузки тестов для select
+    async function loadTests() {
+        try {
+            const response = await fetch('/api/tests');
+            tests = await response.json(); // Сохраняем в глобальную переменную tests
+
+            // Обновляем select для создания вопросов
+            const testSelect = document.querySelector('select[name="testId"]');
+            if (testSelect) {
+                testSelect.innerHTML = '<option value="">Выберите тест</option>';
+                tests.forEach(test => {
+                    testSelect.innerHTML += `
+                        <option value="${escapeHtml(test._id)}">
+                            ${escapeHtml(test.title)}
+                        </option>
+                    `;
+                });
+            }
+
+            // Обновляем список тестов
+            updateTestsList(tests);
+        } catch (err) {
+            console.error("Ошибка при загрузке тестов:", err);
+            alert('Ошибка при загрузке списка тестов');
+        }
+    }
+
+    // Добавляем обработчики поиска
+    const questionSearch = document.getElementById('questionSearch');
+    const questionFilter = document.getElementById('questionFilter');
+    const testSearch = document.getElementById('testSearch');
+    const testFilter = document.getElementById('testFilter');
+
+    let questions = [];
+    let tests = [];
+
+    // Функция фильтрации вопросов
+    function filterQuestions() {
+        const searchQuery = questionSearch.value.toLowerCase();
+        const filterValue = questionFilter.value;
+
+        const filteredQuestions = questions.filter(question => {
+            const matchesSearch = question.questionText.toLowerCase().includes(searchQuery);
+            const matchesFilter = filterValue === 'all' || 
+                (filterValue === 'active' && question.isActive) ||
+                (filterValue === 'inactive' && !question.isActive);
+            
+            return matchesSearch && matchesFilter;
+        });
+
+        updateQuestionsList(filteredQuestions);
+    }
+
+    // Обновляем функцию фильтрации тестов
+    function filterTests() {
+        const searchQuery = testSearch.value.toLowerCase();
+        const filterValue = testFilter.value;
+
+        console.log('Поисковый запрос:', searchQuery); // Для отладки
+        console.log('Всего тестов:', tests.length); // Для отладки
+
+        const filteredTests = tests.filter(test => {
+            const matchesSearch = test.title.toLowerCase().includes(searchQuery);
+            const matchesFilter = filterValue === 'all' || 
+                (filterValue === 'active' && test.isActive) ||
+                (filterValue === 'inactive' && !test.isActive);
+            
+            return matchesSearch && matchesFilter;
+        });
+
+        console.log('Найдено тестов:', filteredTests.length); // Для отладки
+        updateTestsList(filteredTests);
+    }
+
+    function updateQuestionsList(filteredQuestions) {
+        const questionsList = document.getElementById('questionsList');
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            // Мобильная версия списка вопросов
+            questionsList.innerHTML = filteredQuestions.map((question, index) => `
+                <tr class="question-row">
+                    <td>
+                        <div class="question-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                            <div class="question-summary">
+                                <span class="question-number">${index + 1}</span>
+                                <span class="question-preview">${question.questionText.length > 50 ? 
+                                    `${escapeHtml(question.questionText.substring(0, 50))}...` : 
+                                    escapeHtml(question.questionText)}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="question-details">
+                            <div class="full-question">${escapeHtml(question.questionText)}</div>
+                            <div class="answers-list">
+                                ${Array.isArray(question.answers) ? 
+                                    question.answers.map(answer => `<span>${escapeHtml(answer || '')}</span>`).join('') : 
+                                    ''}
+                            </div>
+                            <div class="action-buttons">
+                                <button class="icon-btn edit-btn" data-id="${escapeHtml(question._id)}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="icon-btn delete-btn" data-id="${escapeHtml(question._id)}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            // Десктопная версия списка вопросов
+            questionsList.innerHTML = filteredQuestions.map(question => `
+                <tr>
+                    <td>${escapeHtml(question.questionText)}</td>
+                    <td>${Array.isArray(question.answers) ? question.answers.map(escapeHtml).join(', ') : ''}</td>
+                    <td class="action-buttons">
+                        <button class="icon-btn edit-btn" title="Редактировать" data-id="${escapeHtml(question._id)}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="icon-btn delete-btn" title="Удалить" data-id="${escapeHtml(question._id)}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Добавляем обработчики для кнопок
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id;
+                if (confirm('Вы уверены, что хотите удалить этот вопрос?')) {
+                    try {
+                        const response = await fetch(`/api/questions/${id}`, {  // Изменен путь
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            loadQuestions(); // Перезагружаем список
+                        } else {
+                            alert('Ошибка при удалении вопроса');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка:', error);
+                        alert('Ошибка при удалении вопроса');
+                    }
+                }
+            });
+        });
+    }
+
+    // Обновляем функцию updateTestsList
+    function updateTestsList(filteredTests) {
+        const testsList = document.getElementById('testsList');
+        if (!testsList) return;
+
+        testsList.innerHTML = filteredTests.map(test => `
+            <div class="test-card" data-test-id="${escapeHtml(test._id)}">
+                <h3>${escapeHtml(test.title)}</h3>
+                <p>${escapeHtml(test.description || '')}</p>
+                <div class="test-questions">
+                    <span>Вопросов: ${test.questions ? test.questions.length : 0}</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="icon-btn edit-btn" data-id="${escapeHtml(test._id)}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="icon-btn delete-btn" data-id="${escapeHtml(test._id)}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Добавляем слушатели событий для поиска
+    questionSearch.addEventListener('input', filterQuestions);
+    questionFilter.addEventListener('change', filterQuestions);
+    testSearch.addEventListener('input', filterTests);
+    testFilter.addEventListener('change', filterTests);
+
+    // Загружаем данные при загрузке страницы
     loadQuestions();
     loadTests();
 });
-
-function loadTests() {
-    fetch('/api/tests')  // Изменен путь
-       .then(response => {
-           if (!response.ok) throw new Error('Network response was not ok');
-           if (response.headers.get("content-type")?.indexOf("application/json") === -1) {
-               throw new TypeError("Ответ сервера не в формате JSON");
-           }
-           return response.json();
-       })
-       .then(tests => {
-          const testSelect = document.querySelector('select[name="testId"]');
-          if (testSelect) {
-              testSelect.innerHTML = '<option value="">Выберите тест</option>';
-              tests.forEach(test => {
-                  testSelect.innerHTML += `<option value="${test._id}">${escapeHtml(test.title)}</option>`;
-              });
-          }
-       })
-       .catch(err => {
-           console.error("Ошибка при загрузке тестов:", err);
-           alert('Ошибка при загрузке списка тестов');
-       });
-}
-
-// Удалите или закомментируйте вторую определение loadQuestions, например:
-//
-/*
-function loadQuestions() {
-    fetch('/api/admin/questions')
-        .then(response => response.json())
-        .then(data => {
-            const questionsList = document.getElementById('questionsList');
-            // Очищаем список
-            questionsList.innerHTML = '';
-            data.forEach(q => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${q.questionText}</td>
-                    <td>${q.answers.map(a => a.text).join(', ')}</td>
-                    <td>
-                        <button class="edit-btn" data-id="${q.id}">Редактировать</button>
-                        <button class="delete-btn" data-id="${q.id}">Удалить</button>
-                    </td>
-                `;
-                questionsList.appendChild(tr);
-            });
-        })
-        .catch(err => console.error('Ошибка при загрузке вопросов:', err));
-}
-*/

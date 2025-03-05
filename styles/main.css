@@ -1,8 +1,8 @@
 :root {
-    --primary-color: #2c3e50;         
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --background-color: #ecf0f1;
+    --primary-color: #e74c3c;
+    --secondary-color: #2ecc71;
+    --accent-color: #c0392b;
+    --background-color: #ecfff4;
 }
 
 body {
