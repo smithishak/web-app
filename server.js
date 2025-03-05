@@ -30,7 +30,6 @@ const app = express();
 
 // Middleware для обработки JSON данных и статических файлов
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 
 // Обновляем middleware проверки админа
 const checkAdmin = async (req, res, next) => {
@@ -489,6 +488,39 @@ app.post('/api/admin/backup', checkAdmin, async (req, res) => {
         console.error('Ошибка при создании резервной копии:', error);
         res.status(500).json({ error: 'Ошибка при создании резервной копии' });
     }
+});
+
+// Обновленные маршруты в правильном порядке
+// 1. Разрешаем доступ к статическим файлам для страницы логина
+app.get('/styles/login.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'styles', 'login.css'));
+});
+
+app.get('/scripts/login.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'scripts', 'login.js'));
+});
+
+// 2. Обрабатываем корневой маршрут
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/login.html'));
+});
+
+// 3. Обрабатываем прямой запрос к login.html
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/login.html'));
+});
+
+// 4. Переносим статический middleware после определения конкретных маршрутов
+app.use(express.static(path.join(__dirname)));
+
+// 5. Защищаем все остальные HTML файлы
+app.get('*.html', (req, res, next) => {
+    if (req.path === 'pages/login.html') {
+        return next();
+    }
+    checkAdmin(req, res, () => {
+        res.sendFile(path.join(__dirname, req.path));
+    });
 });
 
 // Запуск сервера
